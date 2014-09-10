@@ -9,7 +9,7 @@ import cn.dreampie.captcha.service.ConfigurableCaptchaService;
 import cn.dreampie.captcha.text.renderer.BestFitTextRenderer;
 import cn.dreampie.captcha.text.renderer.TextRenderer;
 import cn.dreampie.captcha.word.RandomWordFactory;
-import cn.dreampie.encription.EncriptionUtils;
+import cn.dreampie.encription.EncriptionKit;
 import com.jfinal.render.Render;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,9 +162,9 @@ public class CaptchaRender extends Render {
     }
     //System.out.println(validationCode);
     HttpSession session= request.getSession();
-    session.setAttribute(captchaName, EncriptionUtils.encrypt(captchaCode));
+    session.setAttribute(captchaName, EncriptionKit.encrypt(captchaCode));
     session.setAttribute(captchaName + "_time", new Date().getTime());
-//    CookieUtils.addCookie(request, response, AppConstants.CAPTCHA_NAME, EncriptionUtils.encrypt(captchaCode), -1);
+//    CookieUtils.addCookie(request, response, AppConstants.CAPTCHA_NAME, EncriptionKit.encrypt(captchaCode), -1);
     // 取得验证码图片并输出
     BufferedImage bufferedImage = captcha.getImage();
 
