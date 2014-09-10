@@ -1,4 +1,4 @@
-jfinal-slf4j
+jfinal-captcha
 ============
 
-jfinal  slf4j  log api
+jfinal  captcha render
