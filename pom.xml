@@ -44,6 +44,7 @@
     <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     <jfinal.version>1.8</jfinal.version>
+    <jfinal-utils.version>0.1</jfinal-utils.version>
   </properties>
 
   <dependencies>
@@ -53,7 +54,11 @@
       <artifactId>jfinal</artifactId>
       <version>${jfinal.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>cn.dreampie</groupId>
+      <artifactId>jfinal-utils</artifactId>
+      <version>${jfinal-utils.version}</version>
+    </dependency>
   </dependencies>
 
   <distributionManagement>
