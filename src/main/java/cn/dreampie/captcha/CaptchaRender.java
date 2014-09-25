@@ -1,5 +1,6 @@
 package cn.dreampie.captcha;
 
+import cn.dreampie.captcha.background.BackgroundFactory;
 import cn.dreampie.captcha.color.ColorFactory;
 import cn.dreampie.captcha.filter.ConfigurableFilterFactory;
 import cn.dreampie.captcha.filter.library.WobbleImageOp;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpSession;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,68 +32,42 @@ import java.util.Date;
 public class CaptchaRender extends Render {
 
   private Logger logger = LoggerFactory.getLogger(getClass());
-  private static final String CODE_CHAR = "0123456789";
-  private static final int MIN_NUM = 4;
-  private static final int MAX_NUM = 4;
-  private static final int FONT_MIN_SIZE = 20;
-  private static final int FONT_MAX_SIZE = 20;
-  private static final double X_AMPLITUDE = 1.6;
-  private static final double Y_AMPLITUDE = 0.8;
-  private static final int TOP_MARGIN = 1;
-  private static final int BOTTOM_MARGIN = 1;
-  private static final int WIDTH = 118;
-  private static final int HEIGHT = 41;
+  private String code = "0123456789";
+  private int font_min_num = 4;
+  private int font_max_num = 4;
+  private int font_min_size = 20;
+  private int font_max_size = 20;
+  private double x_amplitude = 1.6;
+  private double y_amplitude = 0.8;
+  private int top_margin = 1;
+  private int bottom_margin = 1;
+  private int width = 118;
+  private int height = 41;
 
   private String captchaName = "captcha";
-  private float alpha = 1.0f;
   private ConfigurableCaptchaService configurableCaptchaService = null;
   private ColorFactory colorFactory = null;
   private RandomFontFactory fontFactory = null;
   private RandomWordFactory wordFactory = null;
   private TextRenderer textRenderer = null;
+  private BackgroundFactory backgroundFactory = null;
 
-  public CaptchaRender() {
-    this(MIN_NUM, MAX_NUM, WIDTH, HEIGHT, FONT_MIN_SIZE, FONT_MAX_SIZE, null);
-  }
+  /**
+   * 背景色
+   */
+  private Color bgColor = null;
 
-  public CaptchaRender(int num) {
-    this(num, num, WIDTH, HEIGHT, FONT_MIN_SIZE, FONT_MAX_SIZE, null);
-  }
+  /**
+   * 验证码字符颜色
+   */
+  private Color drawColor = new Color(0, 0, 0);
+  /**
+   * 背景元素的颜色
+   */
+  private Color drawBgColor = new Color(102, 102, 102);
 
-  public CaptchaRender(int minnum, int maxnum, int width, int height, int fontsize) {
-    this(minnum, maxnum, width, height, fontsize, fontsize, null);
-  }
 
-  public CaptchaRender(int minnum, int maxnum, int width, int height, int fontsize, String code) {
-    this(minnum, maxnum, width, height, fontsize, fontsize, code);
-  }
-
-  public CaptchaRender(int minnum, int maxnum, int width, int height, int fontmin, int fontmax, String code) {
-    if (minnum <= 0) {
-      minnum = MIN_NUM;
-    }
-    if (maxnum <= 0) {
-      maxnum = MAX_NUM;
-    }
-    if (width <= 0) {
-      width = WIDTH;
-    }
-    if (height <= 0) {
-      height = HEIGHT;
-    }
-
-    if (fontmin <= 0) {
-      fontmin = FONT_MIN_SIZE;
-    }
-
-    if (fontmax <= 0) {
-      fontmax = FONT_MAX_SIZE;
-    }
-
-    if (!(code != null && !code.isEmpty())) {
-      code = CODE_CHAR;
-    }
-
+  private void initCaptchService() {
     configurableCaptchaService = new ConfigurableCaptchaService();
 
     // 颜色创建工厂,使用一定范围内的随机色
@@ -99,7 +75,7 @@ public class CaptchaRender extends Render {
     colorFactory = new ColorFactory() {
 
       public Color getColor(int index) {
-        return new Color(0, 0, 0);//new Color(118,102,102);
+        return drawColor;//new Color(118,102,102);
       }
     };
 
@@ -107,19 +83,20 @@ public class CaptchaRender extends Render {
 
     // 随机字体生成器
     fontFactory = new RandomFontFactory();
-    fontFactory.setMaxSize(fontmin);
-    fontFactory.setMinSize(fontmax);
+    fontFactory.setMaxSize(font_max_size);
+    fontFactory.setMinSize(font_min_size);
     configurableCaptchaService.setFontFactory(fontFactory);
 
     // 随机字符生成器,去除掉容易混淆的字母和数字,如o和0等
     wordFactory = new RandomWordFactory();
     wordFactory.setCharacters(code);
-    wordFactory.setMaxLength(maxnum);
-    wordFactory.setMinLength(minnum);
+    wordFactory.setMaxLength(font_max_num);
+    wordFactory.setMinLength(font_min_num);
     configurableCaptchaService.setWordFactory(wordFactory);
 
     // 自定义验证码图片背景
-    SimpleBackgroundFactory backgroundFactory = new SimpleBackgroundFactory(alpha);
+    if (backgroundFactory == null)
+      backgroundFactory = new SimpleBackgroundFactory(bgColor);
     configurableCaptchaService.setBackgroundFactory(backgroundFactory);
 
     // 图片滤镜设置
@@ -128,8 +105,8 @@ public class CaptchaRender extends Render {
     java.util.List<BufferedImageOp> filters = new ArrayList<BufferedImageOp>();
     WobbleImageOp wobbleImageOp = new WobbleImageOp();
     wobbleImageOp.setEdgeMode(BufferedImage.TYPE_INT_ARGB);
-    wobbleImageOp.setxAmplitude(X_AMPLITUDE);
-    wobbleImageOp.setyAmplitude(Y_AMPLITUDE);
+    wobbleImageOp.setxAmplitude(x_amplitude);
+    wobbleImageOp.setyAmplitude(y_amplitude);
     filters.add(wobbleImageOp);
     filterFactory.setFilters(filters);
 
@@ -137,8 +114,8 @@ public class CaptchaRender extends Render {
 
     // 文字渲染器设置
     textRenderer = new BestFitTextRenderer();
-    textRenderer.setBottomMargin(BOTTOM_MARGIN);
-    textRenderer.setTopMargin(TOP_MARGIN);
+    textRenderer.setBottomMargin(bottom_margin);
+    textRenderer.setTopMargin(top_margin);
     configurableCaptchaService.setTextRenderer(textRenderer);
 
     // 验证码图片的大小
@@ -151,6 +128,8 @@ public class CaptchaRender extends Render {
    * 输出
    */
   public void render() {
+    //初始化
+    initCaptchService();
     ServletOutputStream outputStream = null;
 
     // 得到验证码对象,有验证码图片和验证码字符串
@@ -161,7 +140,7 @@ public class CaptchaRender extends Render {
       logger.debug("captcha:" + captchaCode);
     }
     //System.out.println(validationCode);
-    HttpSession session= request.getSession();
+    HttpSession session = request.getSession();
     session.setAttribute(captchaName, EncriptionKit.encrypt(captchaCode));
     session.setAttribute(captchaName + "_time", new Date().getTime());
 //    CookieUtils.addCookie(request, response, AppConstants.CAPTCHA_NAME, EncriptionKit.encrypt(captchaCode), -1);
@@ -193,11 +172,79 @@ public class CaptchaRender extends Render {
     this.captchaName = captchaName;
   }
 
-  public float getAlpha() {
-    return alpha;
+  public BackgroundFactory getBackgroundFactory() {
+    return backgroundFactory;
   }
 
-  public void setAlpha(float alpha) {
-    this.alpha = alpha;
+  public void setBackgroundFactory(BackgroundFactory backgroundFactory) {
+    this.backgroundFactory = backgroundFactory;
+  }
+
+  public Color getDrawColor() {
+    return drawColor;
+  }
+
+  public void setDrawColor(Color drawColor) {
+    this.drawColor = drawColor;
+  }
+
+  public Color getDrawBgColor() {
+    return drawBgColor;
+  }
+
+  public void setDrawBgColor(Color drawBgColor) {
+    this.drawBgColor = drawBgColor;
+  }
+
+  public Color getBgColor() {
+    return bgColor;
+  }
+
+  public void setBgColor(Color bgColor) {
+    this.bgColor = bgColor;
+  }
+
+  public void setFontNum(int font_min_num, int font_max_num) {
+    this.font_min_num = font_min_num;
+    this.font_max_num = font_max_num;
+  }
+
+
+  public void setFontSize(int font_min_size, int font_max_size) {
+    this.font_min_size = font_min_size;
+    this.font_max_size = font_max_size;
+  }
+
+  public void setFontMargin(int top_margin, int bottom_margin) {
+    this.top_margin = top_margin;
+    this.bottom_margin = bottom_margin;
+  }
+
+  public void setImgSize(int width, int height) {
+    this.width = width;
+    this.height = height;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
+  }
+
+  public static void main(String[] args) {
+    int imgWidth = 400;
+    int imgHeight = 300;
+    File file = new File("/home/ice/图片/test.png");
+    BufferedImage image = new BufferedImage(imgWidth, imgHeight,
+        BufferedImage.TYPE_INT_ARGB);//RGB形式
+    BackgroundFactory bf = new SimpleBackgroundFactory(new Color(255, 255, 0, 100));
+    bf.fillBackground(image);
+    try {
+      ImageIO.write(image, "png", file);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

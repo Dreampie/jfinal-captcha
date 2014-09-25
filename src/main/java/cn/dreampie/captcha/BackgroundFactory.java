@@ -3,6 +3,7 @@ package cn.dreampie.captcha;
 import cn.dreampie.captcha.background.BackgroundFactory;
 
 import java.awt.*;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
@@ -11,13 +12,15 @@ import java.util.Random;
  */
 class SimpleBackgroundFactory implements BackgroundFactory {
   private Random random = new Random();
-  private float alpha = 1.0f;
+  private Color bgColor = null;
+
+  private Color drawColor = new Color(102, 102, 102);
 
   SimpleBackgroundFactory() {
   }
 
-  SimpleBackgroundFactory(float alpha) {
-    this.alpha = alpha;
+  SimpleBackgroundFactory(Color bgColor) {
+    this.bgColor = bgColor;
   }
 
   public void fillBackground(BufferedImage image) {
@@ -26,12 +29,19 @@ class SimpleBackgroundFactory implements BackgroundFactory {
     // 验证码图片的宽高
     int imgWidth = image.getWidth();
     int imgHeight = image.getHeight();
-    // 1.0f为透明度 ，值从0-1.0，依次变得不透明
-    graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
-    // 填充为白色背景
-    graphics.setColor(Color.WHITE);
-    graphics.fillRect(0, 0, imgWidth, imgHeight);
 
+    if (bgColor != null) {
+      for (int x = 0; x < imgWidth; x++) {
+        for (int y = 0; y < imgHeight; y++) {
+          image.setRGB(x, y, bgColor.getRGB());
+        }
+      }
+      // 1.0f为透明度 ，值从0-1.0，依次变得不透明
+//      graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, alpha));
+      // 填充为白色背景
+//      graphics.setColor(bgColor);
+//      graphics.fillRect(0, 0, imgWidth, imgHeight);
+    }
     // 画100个噪点(颜色及位置随机)
     for (int i = 0; i < 50; i++) {
       // 随机颜色
@@ -39,8 +49,7 @@ class SimpleBackgroundFactory implements BackgroundFactory {
       // int gInt = random.nextInt(255);
       // int bInt = random.nextInt(255);
 
-      graphics.setColor(new Color(102, 102, 102));
-
+      graphics.setColor(drawColor);
       // 随机位置
       int xInt = random.nextInt(imgWidth - 3);
       int yInt = random.nextInt(imgHeight - 2);
@@ -98,13 +107,12 @@ class SimpleBackgroundFactory implements BackgroundFactory {
     }
     for (int i = 0; i < xPointsSpline.length - 1; i++) {
       //graphics.setColor(colorFactory.getColor(i));
-      graphics.setColor(new Color(102, 102, 102));
+      graphics.setColor(drawColor);
       graphics.setStroke(new BasicStroke(0.2f + 2 * random
           .nextFloat()));
       graphics.drawLine(xPointsSpline[i], yPointsSpline[i],
           xPointsSpline[i + 1], yPointsSpline[i + 1]);
     }
-
   }
 
   private double hermiteSpline(double x1, double a1, double x2,
@@ -121,5 +129,21 @@ class SimpleBackgroundFactory implements BackgroundFactory {
     double a1 = (x2 - x0) / 2;
     double a2 = (x3 - x1) / 2;
     return hermiteSpline(x1, a1, x2, a2, t);
+  }
+
+  public Color getBgColor() {
+    return bgColor;
+  }
+
+  public void setBgColor(Color bgColor) {
+    this.bgColor = bgColor;
+  }
+
+  public Color getDrawColor() {
+    return drawColor;
+  }
+
+  public void setDrawColor(Color drawColor) {
+    this.drawColor = drawColor;
   }
 }
