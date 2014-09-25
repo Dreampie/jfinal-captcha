@@ -13,7 +13,8 @@ import java.util.Random;
 class SimpleBackgroundFactory implements BackgroundFactory {
   private Random random = new Random();
   private Color bgColor = null;
-
+  private int artifactNum = 50;
+  private int lineNum = 2;
   private Color drawColor = new Color(102, 102, 102);
 
   SimpleBackgroundFactory() {
@@ -22,6 +23,19 @@ class SimpleBackgroundFactory implements BackgroundFactory {
   SimpleBackgroundFactory(Color bgColor) {
     this.bgColor = bgColor;
   }
+
+  SimpleBackgroundFactory(Color bgColor, Color drawColor) {
+    this.bgColor = bgColor;
+    this.drawColor = drawColor;
+  }
+
+  SimpleBackgroundFactory(Color bgColor, Color drawColor, int artifactNum, int lineNum) {
+    this.bgColor = bgColor;
+    this.drawColor = drawColor;
+    this.artifactNum = artifactNum;
+    this.lineNum = lineNum;
+  }
+
 
   public void fillBackground(BufferedImage image) {
     Graphics2D graphics = (Graphics2D) image.getGraphics();
@@ -42,8 +56,10 @@ class SimpleBackgroundFactory implements BackgroundFactory {
 //      graphics.setColor(bgColor);
 //      graphics.fillRect(0, 0, imgWidth, imgHeight);
     }
+
+    int b = artifactNum / lineNum;
     // 画100个噪点(颜色及位置随机)
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < artifactNum; i++) {
       // 随机颜色
       // int rInt = random.nextInt(255);
       // int gInt = random.nextInt(255);
@@ -64,12 +80,13 @@ class SimpleBackgroundFactory implements BackgroundFactory {
 
       graphics.fillArc(xInt, yInt, wInt, hInt, sAngleInt, eAngleInt);
 
-      // 画5条干扰线
-      // if (i % 20 == 0) {
-      // int xInt2 = random.nextInt(imgWidth);
-      // int yInt2 = random.nextInt(imgHeight);
-      // graphics.drawLine(xInt, yInt, xInt2, yInt2);
-      // }
+      // 画干扰线
+
+      if (b > 1 && i % b == 0) {
+        int xInt2 = random.nextInt(imgWidth);
+        int yInt2 = random.nextInt(imgHeight);
+        graphics.drawLine(xInt, yInt, xInt2, yInt2);
+      }
     }
     graphics.setRenderingHints(new RenderingHints(
         RenderingHints.KEY_ANTIALIASING,
@@ -145,5 +162,13 @@ class SimpleBackgroundFactory implements BackgroundFactory {
 
   public void setDrawColor(Color drawColor) {
     this.drawColor = drawColor;
+  }
+
+  public int getArtifactNum() {
+    return artifactNum;
+  }
+
+  public void setArtifactNum(int artifactNum) {
+    this.artifactNum = artifactNum;
   }
 }

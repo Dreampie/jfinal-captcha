@@ -65,7 +65,12 @@ public class CaptchaRender extends Render {
    * 背景元素的颜色
    */
   private Color drawBgColor = new Color(102, 102, 102);
+  /**
+   * 噪点数量
+   */
+  private int artifactNum = 50;
 
+  private int lineNum=2;
 
   private void initCaptchService() {
     configurableCaptchaService = new ConfigurableCaptchaService();
@@ -95,8 +100,9 @@ public class CaptchaRender extends Render {
     configurableCaptchaService.setWordFactory(wordFactory);
 
     // 自定义验证码图片背景
-    if (backgroundFactory == null)
-      backgroundFactory = new SimpleBackgroundFactory(bgColor);
+    if (backgroundFactory == null) {
+      backgroundFactory = new SimpleBackgroundFactory(bgColor, drawBgColor, artifactNum,lineNum);
+    }
     configurableCaptchaService.setBackgroundFactory(backgroundFactory);
 
     // 图片滤镜设置
@@ -225,8 +231,12 @@ public class CaptchaRender extends Render {
     this.height = height;
   }
 
-  public String getCode() {
-    return code;
+  public void setArtifactNum(int artifactNum) {
+    this.artifactNum = artifactNum;
+  }
+
+  public void setLineNum(int lineNum) {
+    this.lineNum = lineNum;
   }
 
   public void setCode(String code) {
