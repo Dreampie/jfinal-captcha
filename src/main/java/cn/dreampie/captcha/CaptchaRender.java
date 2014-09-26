@@ -32,7 +32,7 @@ import java.util.Date;
 public class CaptchaRender extends Render {
 
   private Logger logger = LoggerFactory.getLogger(getClass());
-  private String code = "0123456789";
+  private String code = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789";
   private int font_min_num = 4;
   private int font_max_num = 4;
   private int font_min_size = 20;
