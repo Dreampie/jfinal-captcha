@@ -14,7 +14,7 @@ class SimpleBackgroundFactory implements BackgroundFactory {
   private Random random = new Random();
   private Color bgColor = null;
   private int artifactNum = 50;
-  private int lineNum = 2;
+  private int lineNum = 0;
   private Color drawColor = new Color(102, 102, 102);
 
   SimpleBackgroundFactory() {
@@ -56,38 +56,47 @@ class SimpleBackgroundFactory implements BackgroundFactory {
 //      graphics.setColor(bgColor);
 //      graphics.fillRect(0, 0, imgWidth, imgHeight);
     }
+    if (drawColor == null)
+      drawColor = getRandomColor();
 
-    int b = artifactNum / lineNum;
-    // 画100个噪点(颜色及位置随机)
-    for (int i = 0; i < artifactNum; i++) {
-      // 随机颜色
-      // int rInt = random.nextInt(255);
-      // int gInt = random.nextInt(255);
-      // int bInt = random.nextInt(255);
+    if (artifactNum > 0) {
+      // 画100个噪点(颜色及位置随机)
+      for (int i = 0; i < artifactNum; i++) {
+        // 随机颜色
+        // int rInt = random.nextInt(255);
+        // int gInt = random.nextInt(255);
+        // int bInt = random.nextInt(255);
+        graphics.setColor(drawColor);
+        // 随机位置
+        int xInt = random.nextInt(imgWidth - 3);
+        int yInt = random.nextInt(imgHeight - 2);
 
-      graphics.setColor(drawColor);
-      // 随机位置
-      int xInt = random.nextInt(imgWidth - 3);
-      int yInt = random.nextInt(imgHeight - 2);
+        // 随机旋转角度
+        int sAngleInt = random.nextInt(360);
+        int eAngleInt = random.nextInt(360);
 
-      // 随机旋转角度
-      int sAngleInt = random.nextInt(360);
-      int eAngleInt = random.nextInt(360);
+        // 随机大小
+        int wInt = random.nextInt(6);
+        int hInt = random.nextInt(6);
 
-      // 随机大小
-      int wInt = random.nextInt(6);
-      int hInt = random.nextInt(6);
+        graphics.fillArc(xInt, yInt, wInt, hInt, sAngleInt, eAngleInt);
 
-      graphics.fillArc(xInt, yInt, wInt, hInt, sAngleInt, eAngleInt);
+      }
+    }
 
-      // 画干扰线
+    // 画干扰线
+    if (lineNum > 0) {
+      for (int i = 0; i < lineNum; i++) {
 
-      if (b > 1 && i % b == 0) {
+        // 随机位置
+        int xInt = random.nextInt(imgWidth - 3);
+        int yInt = random.nextInt(imgHeight - 2);
         int xInt2 = random.nextInt(imgWidth);
         int yInt2 = random.nextInt(imgHeight);
         graphics.drawLine(xInt, yInt, xInt2, yInt2);
       }
     }
+
     graphics.setRenderingHints(new RenderingHints(
         RenderingHints.KEY_ANTIALIASING,
         RenderingHints.VALUE_ANTIALIAS_ON));
@@ -146,6 +155,19 @@ class SimpleBackgroundFactory implements BackgroundFactory {
     double a1 = (x2 - x0) / 2;
     double a2 = (x3 - x1) / 2;
     return hermiteSpline(x1, a1, x2, a2, t);
+  }
+
+  public Color getRandomColor() {
+    int[] c = new int[3];
+    int i = random.nextInt(c.length);
+    for (int fi = 0; fi < c.length; fi++) {
+      if (fi == i) {
+        c[fi] = random.nextInt(71);
+      } else {
+        c[fi] = random.nextInt(256);
+      }
+    }
+    return new Color(c[0], c[1], c[2]);
   }
 
   public Color getBgColor() {

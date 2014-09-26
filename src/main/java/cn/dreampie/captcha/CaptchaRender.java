@@ -2,8 +2,11 @@ package cn.dreampie.captcha;
 
 import cn.dreampie.captcha.background.BackgroundFactory;
 import cn.dreampie.captcha.color.ColorFactory;
+import cn.dreampie.captcha.color.RandomColorFactory;
 import cn.dreampie.captcha.filter.ConfigurableFilterFactory;
+import cn.dreampie.captcha.filter.FilterFactory;
 import cn.dreampie.captcha.filter.library.WobbleImageOp;
+import cn.dreampie.captcha.filter.predefined.*;
 import cn.dreampie.captcha.font.RandomFontFactory;
 import cn.dreampie.captcha.service.Captcha;
 import cn.dreampie.captcha.service.ConfigurableCaptchaService;
@@ -25,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 
 /**
  * Created by wangrenhui on 13-12-31.
@@ -45,13 +49,15 @@ public class CaptchaRender extends Render {
   private int height = 41;
 
   private String captchaName = "captcha";
-  private ConfigurableCaptchaService configurableCaptchaService = null;
+  private ConfigurableCaptchaService configurableCaptchaService = new ConfigurableCaptchaService();
   private ColorFactory colorFactory = null;
   private RandomFontFactory fontFactory = null;
   private RandomWordFactory wordFactory = null;
   private TextRenderer textRenderer = null;
   private BackgroundFactory backgroundFactory = null;
-
+  //滤镜特效
+  private FilterFactory filter = null;
+  private static Random random = new Random();
   /**
    * 背景色
    */
@@ -65,24 +71,28 @@ public class CaptchaRender extends Render {
    * 背景元素的颜色
    */
   private Color drawBgColor = new Color(102, 102, 102);
+
+  private boolean randomColor = false;
   /**
    * 噪点数量
    */
   private int artifactNum = 50;
 
-  private int lineNum=2;
+  private int lineNum = 0;
 
   private void initCaptchService() {
-    configurableCaptchaService = new ConfigurableCaptchaService();
 
     // 颜色创建工厂,使用一定范围内的随机色
-    //colorFactory = new RandomColorFactory();
-    colorFactory = new ColorFactory() {
 
-      public Color getColor(int index) {
-        return drawColor;//new Color(118,102,102);
-      }
-    };
+    if (randomColor)
+      colorFactory = new RandomColorFactory();
+    else
+      colorFactory = new ColorFactory() {
+
+        public Color getColor(int index) {
+          return drawColor;//new Color(118,102,102);
+        }
+      };
 
     configurableCaptchaService.setColorFactory(colorFactory);
 
@@ -101,22 +111,49 @@ public class CaptchaRender extends Render {
 
     // 自定义验证码图片背景
     if (backgroundFactory == null) {
-      backgroundFactory = new SimpleBackgroundFactory(bgColor, drawBgColor, artifactNum,lineNum);
+      backgroundFactory = new SimpleBackgroundFactory(bgColor, randomColor ? null : drawBgColor, artifactNum, lineNum);
     }
     configurableCaptchaService.setBackgroundFactory(backgroundFactory);
 
     // 图片滤镜设置
-    ConfigurableFilterFactory filterFactory = new ConfigurableFilterFactory();
+    int filterNum;
+    if (filter == null) {
+      filterNum = random.nextInt(4);
+    } else
+      filterNum = filter.value();
 
-    java.util.List<BufferedImageOp> filters = new ArrayList<BufferedImageOp>();
-    WobbleImageOp wobbleImageOp = new WobbleImageOp();
-    wobbleImageOp.setEdgeMode(BufferedImage.TYPE_INT_ARGB);
-    wobbleImageOp.setxAmplitude(x_amplitude);
-    wobbleImageOp.setyAmplitude(y_amplitude);
-    filters.add(wobbleImageOp);
-    filterFactory.setFilters(filters);
-
-    configurableCaptchaService.setFilterFactory(filterFactory);
+    switch (filterNum) {
+      case 0:
+        configurableCaptchaService.setFilterFactory(new CurvesRippleFilterFactory(configurableCaptchaService.getColorFactory()));
+        break;
+      case 1:
+        configurableCaptchaService.setFilterFactory(new MarbleRippleFilterFactory());
+        break;
+      case 2:
+        configurableCaptchaService.setFilterFactory(new DoubleRippleFilterFactory());
+        break;
+      case 3:
+        configurableCaptchaService.setFilterFactory(new WobbleRippleFilterFactory());
+        break;
+      case 4:
+        configurableCaptchaService.setFilterFactory(new DiffuseRippleFilterFactory());
+        break;
+      default:
+        //默认效果
+        configurableCaptchaService.setFilterFactory(new CurvesRippleFilterFactory(configurableCaptchaService.getColorFactory()));
+//        ConfigurableFilterFactory filterFactory = new ConfigurableFilterFactory();
+//
+//        java.util.List<BufferedImageOp> filters = new ArrayList<BufferedImageOp>();
+//        WobbleImageOp wobbleImageOp = new WobbleImageOp();
+//        wobbleImageOp.setEdgeMode(BufferedImage.TYPE_INT_ARGB);
+//        wobbleImageOp.setxAmplitude(x_amplitude);
+//        wobbleImageOp.setyAmplitude(y_amplitude);
+//        filters.add(wobbleImageOp);
+//        filterFactory.setFilters(filters);
+//
+//        configurableCaptchaService.setFilterFactory(filterFactory);
+        break;
+    }
 
     // 文字渲染器设置
     textRenderer = new BestFitTextRenderer();
@@ -242,6 +279,37 @@ public class CaptchaRender extends Render {
   public void setCode(String code) {
     this.code = code;
   }
+
+  public void setFilter(FilterFactory filter) {
+    this.filter = filter;
+  }
+
+  public void setRandomColor(boolean randomColor) {
+    this.randomColor = randomColor;
+  }
+
+  public enum FilterFactory {
+    //曲面
+    Curves(0),
+    //大理石纹
+    Marble(1),
+    //对折
+    Double(2),
+    //颤动
+    Wobble(3),
+    //扩散
+    Diffuse(4);
+    private int value;
+
+    private FilterFactory(int value) {
+      this.value = value;
+    }
+
+    public int value() {
+      return this.value;
+    }
+  }
+
 
   public static void main(String[] args) {
     int imgWidth = 400;
