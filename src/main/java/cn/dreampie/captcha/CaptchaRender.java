@@ -184,7 +184,7 @@ public class CaptchaRender extends Render {
     }
     //System.out.println(validationCode);
     HttpSession session = request.getSession();
-    session.setAttribute(captchaName, EncriptionKit.encrypt(captchaCode));
+    session.setAttribute(captchaName, EncriptionKit.encrypt(captchaCode.toLowerCase()));
     session.setAttribute(captchaName + "_time", new Date().getTime());
 //    CookieUtils.addCookie(request, response, AppConstants.CAPTCHA_NAME, EncriptionKit.encrypt(captchaCode), -1);
     // 取得验证码图片并输出
