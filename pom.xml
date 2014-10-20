@@ -46,6 +46,7 @@
     <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     <jfinal.version>1.8</jfinal.version>
     <jfinal-utils.version>0.1</jfinal-utils.version>
+    <servlet.version>3.1.0</servlet.version>
   </properties>
 
   <dependencies>
@@ -59,6 +60,14 @@
       <groupId>cn.dreampie</groupId>
       <artifactId>jfinal-utils</artifactId>
       <version>${jfinal-utils.version}</version>
+    </dependency>
+
+    <!--servlet-api-->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>${servlet.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
