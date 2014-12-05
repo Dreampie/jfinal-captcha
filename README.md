@@ -70,4 +70,4 @@ maven 引用  ${jfinal-captcha.version}替换为相应的版本如:0.1
 
 效果
 
-[曲面Curves](http://static.oschina.net/uploads/space/2014/0926/120050_ZWl2_946569.png)
+![曲面Curves](http://static.oschina.net/uploads/space/2014/0926/120050_ZWl2_946569.png "曲面")
